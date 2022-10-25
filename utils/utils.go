@@ -2,10 +2,9 @@ package utils
 
 import (
 	"time"
-	"fmt"
 
-	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 
 	interfaces "banklineAPI/server/interfaces"
 )
@@ -27,7 +26,6 @@ func GenerateToken(user *interfaces.Login) string {
 		"password": user.Password,
 		"expire":   time.Now().Add(time.Minute ^ 1).Unix(),
 	}
-	fmt.Println(tokenContent["expire"])
 	jwtToken := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tokenContent)
 	token, err := jwtToken.SignedString([]byte("TokenPassword"))
 	HandleError(err)
@@ -40,7 +38,11 @@ func ValidateToken(token string, password string) bool {
 		return []byte("TokenPassword"), nil
 	})
 	if tokenData["password"] == password {
-		return true
+		if tokenData["expire"].(float64) > float64(time.Now().Local().Unix()) {
+			return true
+		} else {
+			return false
+		}
 	} else {
 		return false
 	}
